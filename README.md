@@ -1,5 +1,5 @@
 # django-fernet-fieldhasher
-Creating encrypted database fields with the algorithm with cryptography.fernet
+Creating encrypted database fields with the algorithm cryptography.fernet
 
 # Usage
 
@@ -7,8 +7,8 @@ Creating encrypted database fields with the algorithm with cryptography.fernet
 from django.db import models
 
 class User(models.Model):
-    name = models.CharField(verbose_name="name")
+    name = models.CharField(verbose_name="Name")
     
     # The password is stored encrypted but when retrieved through the instance it returns to its text form.
-    password = EncryptedCharField(verbose_name=_("Password"), max_length=350)
+    password = EncryptedCharField(verbose_name=Password", max_length=350)
 ```
