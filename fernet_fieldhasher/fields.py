@@ -2,7 +2,7 @@
 from django.db import models
 import django.forms as django_forms
 from fernet_fieldhasher.hashers import FernetPasswordHasher
-from fernet_fieldhasher.forms import PasswordField
+from fernet_fieldhasher.forms.fields import PasswordField
 
 
 class EncryptedCharField(models.CharField):
