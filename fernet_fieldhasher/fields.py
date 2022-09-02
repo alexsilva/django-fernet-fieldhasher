@@ -1,7 +1,8 @@
 # coding=utf-8
 from django.db import models
-
+import django.forms as django_forms
 from fernet_fieldhasher.hashers import FernetPasswordHasher
+from fernet_fieldhasher.forms import PasswordField
 
 
 class EncryptedCharField(models.CharField):
@@ -34,3 +35,11 @@ class EncryptedCharField(models.CharField):
 		if self.key is not None:
 			kwargs['key'] = self.key
 		return name, path, args, kwargs
+
+
+class EncryptedPasswordField(EncryptedCharField):
+	"""A field that defines an encrypted password"""
+	def formfield(self, **kwargs):
+		defaults = {'form_class': PasswordField, 'strip': False}
+		defaults.update(kwargs)
+		return super().formfield(**defaults)
