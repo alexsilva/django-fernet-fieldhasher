@@ -5,7 +5,7 @@ from fernet_fieldhasher.hashers import FernetPasswordHasher
 from fernet_fieldhasher.forms.fields import PasswordField
 
 
-class EncryptedCharField(models.CharField):
+class FernetCharField(models.CharField):
 	"""CharField with encrypted data"""
 
 	def __init__(self, key=None, *args, **kwargs):
@@ -37,7 +37,7 @@ class EncryptedCharField(models.CharField):
 		return name, path, args, kwargs
 
 
-class EncryptedPasswordField(EncryptedCharField):
+class FernetPasswordField(FernetCharField):
 	"""A field that defines an encrypted password"""
 	def formfield(self, **kwargs):
 		defaults = {'form_class': PasswordField, 'strip': False}
