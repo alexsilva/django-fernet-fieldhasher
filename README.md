@@ -10,5 +10,5 @@ class User(models.Model):
     name = models.CharField(verbose_name="Name")
     
     # The password is stored encrypted but when retrieved through the instance it returns to its text form.
-    password = EncryptedCharField(verbose_name=Password", max_length=350)
+    password = FernetPasswordField(verbose_name=Password", max_length=350)
 ```
