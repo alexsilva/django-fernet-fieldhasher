@@ -8,7 +8,9 @@ class FernetCharField(models.CharField):
 	"""CharField with encrypted data"""
 
 	def __init__(self, key=None, *args, **kwargs):
+		max_length = kwargs.get('max_length', None)
 		self.encoding = kwargs.pop('encoding', None)
+		self.text_length = kwargs.pop('text_length', max_length)
 		super().__init__(*args, **kwargs)
 		self.key = key
 		self.fernet = FernetPasswordHasher(key)
@@ -42,12 +44,18 @@ class FernetCharField(models.CharField):
 			kwargs['key'] = self.key
 		if self.encoding is not None:
 			kwargs['encoding'] = self.encoding
+		if self.text_length is not None:
+			kwargs['text_length'] = self.text_length
 		return name, path, args, kwargs
 
 
 class FernetPasswordField(FernetCharField):
 	"""A field that defines an encrypted password"""
 	def formfield(self, **kwargs):
-		defaults = {'form_class': PasswordField, 'strip': False}
+		defaults = {
+			'form_class': PasswordField,
+			'max_length': self.text_length,
+			'strip': False,
+		}
 		defaults.update(kwargs)
 		return super().formfield(**defaults)
