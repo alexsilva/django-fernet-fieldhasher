@@ -1,14 +1,14 @@
 # coding=utf-8
 from django.db import models
-import django.forms as django_forms
-from fernet_fieldhasher.hashers import FernetPasswordHasher
 from fernet_fieldhasher.forms.fields import PasswordField
+from fernet_fieldhasher.hashers import FernetPasswordHasher
 
 
 class FernetCharField(models.CharField):
 	"""CharField with encrypted data"""
 
 	def __init__(self, key=None, *args, **kwargs):
+		self.encoding = kwargs.pop('encoding', None)
 		super().__init__(*args, **kwargs)
 		self.key = key
 		self.fernet = FernetPasswordHasher(key)
@@ -18,7 +18,10 @@ class FernetCharField(models.CharField):
 		if value is None:
 			return value
 		if self.fernet.is_hash(value):
-			value = self.fernet.decode(value)
+			options = {}
+			if self.encoding is not None:
+				options['encoding'] = self.encoding
+			value = self.fernet.decode(value, **options)
 		return value
 
 	def to_python(self, value):
@@ -27,13 +30,18 @@ class FernetCharField(models.CharField):
 			return value
 		if self.fernet.is_hash(value):
 			return value
-		value = self.fernet.encode(value)
+		options = {}
+		if self.encoding is not None:
+			options['encoding'] = self.encoding
+		value = self.fernet.encode(value, **options)
 		return value
 
 	def deconstruct(self):
 		name, path, args, kwargs = super().deconstruct()
 		if self.key is not None:
 			kwargs['key'] = self.key
+		if self.encoding is not None:
+			kwargs['encoding'] = self.encoding
 		return name, path, args, kwargs
 
 

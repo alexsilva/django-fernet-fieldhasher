@@ -4,7 +4,7 @@ from collections import OrderedDict
 
 from django.conf import settings
 from django.contrib.auth.hashers import BasePasswordHasher, mask_hash
-from django.utils.encoding import force_bytes
+from django.utils.encoding import force_bytes, force_text
 from django.utils.translation import gettext_noop as _
 
 
@@ -23,27 +23,31 @@ class FernetPasswordHasher(BasePasswordHasher):
 
 	def __init__(self, key=None):
 		self.key = self.generate_key(key or settings.SECRET_KEY)
+		# Usually used in password decoding
+		self._encoding = 'utf-8'
 
 	@staticmethod
 	def generate_key(key):
 		key = force_bytes(key[0:32])
 		return base64.urlsafe_b64encode(key)
 
-	def encode(self, password, salt=None):
+	def encode(self, password, salt=None, **options):
 		fernet = self._load_library()
-		password = force_bytes(password)
+		encoding = options.get('encoding', self._encoding)
+		password = force_bytes(password, encoding=encoding)
 		f = fernet.Fernet(self.key)
 		token = f.encrypt(password)
-		token = FernetPassword(token, 'ascii')
+		token = force_text(token, 'ascii')
 		return "%s$%s" % (self.algorithm, token)
 
-	def decode(self, token, salt=None):
+	def decode(self, token, salt=None, **options):
 		fernet = self._load_library()
 		algorithm, token = token.split("$", 1)
 		token = force_bytes(token, encoding='ascii')
 		f = fernet.Fernet(self.key)
 		password = f.decrypt(token)
-		return FernetPassword(password, 'ascii')
+		encoding = options.get('encoding', self._encoding)
+		return FernetPassword(password, encoding)
 
 	def is_hash(self, encoded):
 		"""Checks if the password was encoded with this algorithm"""
