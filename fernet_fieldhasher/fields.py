@@ -12,6 +12,10 @@ class FernetField(models.Field):
 		max_length = kwargs.get('max_length', None)
 		self.encoding = kwargs.pop('encoding', None)
 		self.text_length = kwargs.pop('text_length', max_length)
+		# If password should be decrypted.
+		self.decode_from_db = kwargs.pop('decode_from_db', True)
+		# If errors in password decryption should be raised.
+		self.decode_token_errors = kwargs.pop('decode_token_errors', True)
 		super().__init__(*args, **kwargs)
 		self.validators.append(dj_validators.MaxLengthValidator(self.text_length))
 		self.key = key
@@ -21,8 +25,8 @@ class FernetField(models.Field):
 		"""Decrypt data from the database"""
 		if value is None:
 			return value
-		if self.fernet.is_hash(value):
-			options = {}
+		if self.decode_from_db and self.fernet.is_hash(value):
+			options = {'decode_token_errors': self.decode_token_errors}
 			if self.encoding is not None:
 				options['encoding'] = self.encoding
 			value = self.fernet.decode(value, **options)
@@ -48,6 +52,8 @@ class FernetField(models.Field):
 			kwargs['encoding'] = self.encoding
 		if self.text_length is not None:
 			kwargs['text_length'] = self.text_length
+		kwargs['decode_from_db'] = self.decode_from_db
+		kwargs['decode_token_errors'] = self.decode_token_errors
 		return name, path, args, kwargs
 
 	def check(self, **kwargs):

@@ -45,7 +45,13 @@ class FernetPasswordHasher(BasePasswordHasher):
 		algorithm, token = token.split("$", 1)
 		token = force_bytes(token, encoding='ascii')
 		f = fernet.Fernet(self.key)
-		password = f.decrypt(token)
+		try:
+			password = f.decrypt(token)
+		except fernet.InvalidToken as exc:
+			decode_token_errors = options.get('decode_token_errors', True)
+			if not decode_token_errors:
+				return None
+			raise exc
 		encoding = options.get('encoding', self._encoding)
 		return FernetPassword(password, encoding)
 
