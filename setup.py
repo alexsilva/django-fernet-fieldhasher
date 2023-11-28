@@ -3,7 +3,7 @@ from distutils.core import setup
 
 setup(
 	name='django-fernet-fieldhasher',
-	version='1.5.0',
+	version='1.6.0',
 	packages=['fernet_fieldhasher', 'fernet_fieldhasher.forms'],
 	url='https://github.com/alexsilva/django-fernet-fieldhasher',
 	include_package_data=True,
