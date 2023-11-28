@@ -21,15 +21,25 @@ class FernetField(models.Field):
 		self.key = key
 		self.fernet = FernetPasswordHasher(key)
 
+	def encrypt(self, value, **options):
+		"""Encrypts the value"""
+		if self.encoding is not None:
+			options.setdefault('encoding', self.encoding)
+		return self.fernet.encode(value, **options)
+
+	def decrypt(self, value, **options):
+		"""Decrypt the value"""
+		options.setdefault('decode_token_errors', self.decode_token_errors)
+		if self.encoding is not None:
+			options.setdefault('encoding', self.encoding)
+		return self.fernet.decode(value, **options)
+
 	def from_db_value(self, value, expression, connection):
 		"""Decrypt data from the database"""
 		if value is None:
 			return value
 		if self.decode_from_db and self.fernet.is_hash(value):
-			options = {'decode_token_errors': self.decode_token_errors}
-			if self.encoding is not None:
-				options['encoding'] = self.encoding
-			value = self.fernet.decode(value, **options)
+			value = self.decrypt(value)
 		return value
 
 	def to_python(self, value):
@@ -38,10 +48,7 @@ class FernetField(models.Field):
 			return value
 		if self.fernet.is_hash(value):
 			return value
-		options = {}
-		if self.encoding is not None:
-			options['encoding'] = self.encoding
-		value = self.fernet.encode(value, **options)
+		value = self.encrypt(value)
 		return value
 
 	def deconstruct(self):
