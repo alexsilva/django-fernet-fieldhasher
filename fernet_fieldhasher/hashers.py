@@ -4,7 +4,7 @@ from collections import OrderedDict
 
 from django.conf import settings
 from django.contrib.auth.hashers import BasePasswordHasher, mask_hash
-from django.utils.encoding import force_bytes, force_text
+from django.utils.encoding import force_bytes, force_str
 from django.utils.translation import gettext_noop as _
 
 
@@ -37,7 +37,7 @@ class FernetPasswordHasher(BasePasswordHasher):
 		password = force_bytes(password, encoding=encoding)
 		f = fernet.Fernet(self.key)
 		token = f.encrypt(password)
-		token = force_text(token, 'ascii')
+		token = force_str(token, 'ascii')
 		return "%s$%s" % (self.algorithm, token)
 
 	def decode(self, token, salt=None, **options):
